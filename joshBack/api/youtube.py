@@ -1,11 +1,11 @@
-from logging import exception
 import threading
 from flask import Blueprint
+from random import randint
 import requests
 import time
 import os
 import httpx
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from joshBack.models import VideoMeta
 from joshBack.response.response import make_response
@@ -16,7 +16,6 @@ youtubeBP = Blueprint("youtubeApi", __name__)
 BASE_URL = os.environ.get("BASE_URL", "http://localhost:5000/")
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 QUERY = os.environ.get("QUERY_PARAM", "cricket")
-NEXT_PAGE = "CB4QAA"
 
 
 def run_background_job():
@@ -32,30 +31,24 @@ def run_background_job():
             except:
                 print("Server not yet started")
             finally:
-                time.sleep(3)
+                time.sleep(120)
 
     thread = threading.Thread(target=fetch_videos)
     thread.start()
 
 
 # function converted to coroutine
-async def get_videos():
+async def get_videos(date):
     # async client used for async functions
     async with httpx.AsyncClient() as session:
-        url = "https://youtube.googleapis.com/youtube/v3/search?part=snippet&q={}&key={}".format(
-            QUERY, GOOGLE_API_KEY
+        url = "https://youtube.googleapis.com/youtube/v3/search?part=snippet&order=date&q={}&type=video&publishedAfter={}&key={}".format(
+            QUERY, date, GOOGLE_API_KEY
         )
-        if NEXT_PAGE != "":
-            url = url + "&pageToken={}".format(NEXT_PAGE)
         print(url)
         # dont wait for the response of API
         res = await session.get(url)
         result = res.json()
         # Storing result of youtube api to the database
-        from server import SQLSession
-
-        session = SQLSession()
-        connection = session.connection()
         try:
             for video in result["items"]:
                 vmeta = VideoMeta(
@@ -69,22 +62,30 @@ async def get_videos():
                     high_url=video["snippet"]["thumbnails"]["high"]["url"],
                     channeltitle=video["snippet"]["channelTitle"],
                 )
+                from server import SQLSession
+
+                session = SQLSession()
+                connection = session.connection()
                 session.add(vmeta)
-            session.commit()
-            session.close()
-            connection.close()
+                try:
+                    session.commit()
+                    session.close()
+                    connection.close()
+                except Exception as e:
+                    print(
+                        "DB Error:", e, "\nDuplicate Video:", video["snippet"]["title"]
+                    )
+                    session.rollback()
+                    session.close()
+                    connection.close()
         except Exception as e:
-            print("DB Error: ", e)
-            session.close()
-            connection.close()
+            print("Error from Youtube api", e)
     return result
 
 
 @youtubeBP.get("/")
 async def hello():
-    res = await get_videos()
-    try:
-        NEXT_PAGE = res["nextPageToken"]
-    except:
-        pass
+    delta = randint(1, 10)
+    date = ((datetime.utcnow() - timedelta(delta)).isoformat()) + "Z"
+    res = await get_videos(date)
     return make_response("Success", HTTPStatus.Success, res)

@@ -25,5 +25,5 @@ app.register_blueprint(homeBP, url_prefix="/{}/home".format(API_VERSION_V1))
 
 
 if __name__ == "__main__":
-    # run_background_job()
-    app.run(host="0.0.0.0", debug=True, use_reloader=False)
+    run_background_job()
+    app.run(host="0.0.0.0")
