@@ -21,6 +21,7 @@ def get():
 
 
 app.register_blueprint(youtubeBP, url_prefix="/{}/youtube".format(API_VERSION_V1))
+app.register_blueprint(homeBP, url_prefix="/{}/home".format(API_VERSION_V1))
 
 
 if __name__ == "__main__":

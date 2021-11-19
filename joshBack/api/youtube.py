@@ -8,6 +8,8 @@ import httpx
 from datetime import datetime
 
 from joshBack.models import VideoMeta
+from joshBack.response.response import make_response
+from joshBack.response.statusCodes import HTTPStatus
 
 youtubeBP = Blueprint("youtubeApi", __name__)
 
@@ -54,20 +56,20 @@ async def get_videos():
 
         session = SQLSession()
         connection = session.connection()
-        for video in result["items"]:
-            vmeta = VideoMeta(
-                title=video["snippet"]["title"],
-                description=video["snippet"]["description"],
-                publish_datetime=datetime.fromisoformat(
-                    video["snippet"]["publishTime"][:-1]
-                ),
-                default_url=video["snippet"]["thumbnails"]["default"]["url"],
-                medium_url=video["snippet"]["thumbnails"]["medium"]["url"],
-                high_url=video["snippet"]["thumbnails"]["high"]["url"],
-                channeltitle=video["snippet"]["channelTitle"],
-            )
-            session.add(vmeta)
         try:
+            for video in result["items"]:
+                vmeta = VideoMeta(
+                    title=video["snippet"]["title"],
+                    description=video["snippet"]["description"],
+                    publish_datetime=datetime.fromisoformat(
+                        video["snippet"]["publishTime"][:-1]
+                    ),
+                    default_url=video["snippet"]["thumbnails"]["default"]["url"],
+                    medium_url=video["snippet"]["thumbnails"]["medium"]["url"],
+                    high_url=video["snippet"]["thumbnails"]["high"]["url"],
+                    channeltitle=video["snippet"]["channelTitle"],
+                )
+                session.add(vmeta)
             session.commit()
             session.close()
             connection.close()
@@ -85,4 +87,4 @@ async def hello():
         NEXT_PAGE = res["nextPageToken"]
     except:
         pass
-    return res
+    return make_response("Success", HTTPStatus.Success, res)
