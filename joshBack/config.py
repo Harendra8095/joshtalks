@@ -5,8 +5,7 @@ load_dotenv(os.environ.get("DOTENV"))
 
 # Application Configuration
 class Config:
-    SECRET_KEY = os.environ.get("SECRET_KEY")
-    DEBUG = False
+    DEBUG = True
 
 
 # Database Configuration

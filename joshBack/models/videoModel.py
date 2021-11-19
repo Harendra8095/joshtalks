@@ -9,7 +9,7 @@ class VideoMeta(Base):
     __tablename__ = "videometa"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    title = Column(String, nullable=False)
+    title = Column(String, nullable=False, unique=True)
     description = Column(String)
     publish_datetime = Column(DateTime, nullable=False)
     default_url = Column(String, nullable=False)
