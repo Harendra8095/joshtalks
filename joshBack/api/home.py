@@ -8,7 +8,7 @@ from sqlalchemy import func, or_
 homeBP = Blueprint("homeApi", __name__)
 
 
-@homeBP.route("/", methods=["GET"])
+@homeBP.route("/home", methods=["GET"])
 def home():
     try:
         page = request.args.get("page", 1, type=int)
@@ -18,10 +18,10 @@ def home():
 
     session = SQLSession()
     connection = session.connection()
-    query = session.query(VideoMeta).order_by(VideoMeta.publish_datetime.desc)
+    query = session.query(VideoMeta).order_by(VideoMeta.publish_datetime.desc())
     video_query = paginate_query(query, page=page)
     resp = []
-    for video in video_query:
+    for video in video_query.items:
         video_meta = {
             "id": video.id,
             "title": video.title,
@@ -54,10 +54,10 @@ def search():
             VideoMeta.description_tsvector.op("@@")(func.to_tsquery(q)),
         )
     )
+    resp = []
     page = request.args.get("page", 1, type=int)
     video_query = paginate_query(query, page=page)
-    resp = []
-    for video in video_query:
+    for video in video_query.items:
         video_meta = {
             "id": video.id,
             "title": video.title,

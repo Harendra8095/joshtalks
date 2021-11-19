@@ -13,9 +13,9 @@ from joshBack.response.statusCodes import HTTPStatus
 
 youtubeBP = Blueprint("youtubeApi", __name__)
 
-BASE_URL = os.environ.get("BASE_URL")
+BASE_URL = os.environ.get("BASE_URL", "http://localhost:5000/")
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
-QUERY = os.environ.get("QUERY_PARAM")
+QUERY = os.environ.get("QUERY_PARAM", "cricket")
 NEXT_PAGE = "CB4QAA"
 
 

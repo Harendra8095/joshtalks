@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv(os.environ.get("DOTENV"))
+load_dotenv()
 
 # Application Configuration
 class Config:

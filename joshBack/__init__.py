@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
 
-load_dotenv(os.environ.get("DOTENV"))
+load_dotenv()
 
 
 def create_db_engine(config):
